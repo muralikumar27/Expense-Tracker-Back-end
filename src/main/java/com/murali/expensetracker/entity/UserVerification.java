@@ -13,7 +13,7 @@ public class UserVerification {
     private static final int EXPIRY_TIME = 5;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column(nullable = false)
     private String token;

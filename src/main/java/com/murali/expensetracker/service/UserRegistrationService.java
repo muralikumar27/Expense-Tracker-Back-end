@@ -6,5 +6,9 @@ import com.murali.expensetracker.model.UserModel;
 
 public interface UserRegistrationService {
 
-    void registerUser(UserModel userModel) throws Exception;
+    User registerUser(UserModel userModel) throws Exception;
+
+    void saveUserToken(User user, String token);
+
+    String verifyUser(String token);
 }

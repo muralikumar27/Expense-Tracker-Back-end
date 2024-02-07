@@ -2,12 +2,16 @@ package com.murali.expensetracker.service;
 
 
 import com.murali.expensetracker.entity.User;
+import com.murali.expensetracker.entity.UserVerification;
 import com.murali.expensetracker.exception.UserAlreadyExistsException;
 import com.murali.expensetracker.model.UserModel;
 import com.murali.expensetracker.repository.UserRepository;
+import com.murali.expensetracker.repository.UserVerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Calendar;
 
 @Service
 public class UserRegistrationServiceImplementation implements UserRegistrationService{
@@ -16,8 +20,10 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    UserVerificationRepository userVerificationRepository;
     @Override
-    public void registerUser(UserModel userModel) throws Exception{
+    public User registerUser(UserModel userModel) throws Exception{
         User user = new User();
         user.setEmailId(userModel.getEmail());
         user.setName(userModel.getName());
@@ -26,9 +32,40 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
         if(userRepository.existsByEmailId(userModel.getEmail())){
             throw new UserAlreadyExistsException(userModel.getEmail()+" is already in use.");
         }
-        userRepository.save(user);
+        return userRepository.save(user);
 
     }
 
+    @Override
+    public void saveUserToken(User user, String token) {
+        UserVerification userVerification = new UserVerification(user,token);
+        userVerificationRepository.save(userVerification);
+    }
 
+    /*
+    *This method will try to get UserVerification object
+    * with the help of userVerificationRepository.getByToken(token)
+    * if there exists a data in the userVerification table
+    * with the token then the data from the database
+    * will be stored as userVerification object, if there is no
+    * data for the token "invalid" will be returned, if the token
+    * timing is expired then "expired" will be returned, if the token is valid
+    * user account will be enabled and "valid" will be returned.
+    */
+    @Override
+    public String verifyUser(String token) {
+        UserVerification userVerification = userVerificationRepository.getByToken(token);
+        Calendar calendar = Calendar.getInstance();
+        if(userVerification==null){
+            return "invalid";
+        }
+        if((userVerification.getTime().getTime()-calendar.getTime().getTime()) <= 0){
+            userVerificationRepository.delete(userVerification);
+            return "expired";
+        }
+        User user = userVerification.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+        return "valid";
+    }
 }
