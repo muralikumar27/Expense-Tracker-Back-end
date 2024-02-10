@@ -5,6 +5,7 @@ import com.murali.expensetracker.entity.User;
 import com.murali.expensetracker.event.UserRegistrationEvent;
 import com.murali.expensetracker.model.UserModel;
 import com.murali.expensetracker.response.UserRegistrationStatus;
+import com.murali.expensetracker.service.UrlCreation;
 import com.murali.expensetracker.service.UserRegistrationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -22,6 +23,8 @@ public class UserRegistrationController {
     private UserRegistrationService userRegistrationService;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private UrlCreation urlCreation;
 
     /*
     * This method handles the POST request from the user to
@@ -35,15 +38,10 @@ public class UserRegistrationController {
     public ResponseEntity<UserRegistrationStatus> registerUser(@Valid @RequestBody UserModel userModel,HttpServletRequest request) throws Exception {
         User user = userRegistrationService.registerUser(userModel);
         UserRegistrationStatus userRegistrationStatus = new UserRegistrationStatus("Check email for verification link", HttpStatus.OK);
-        applicationEventPublisher.publishEvent(new UserRegistrationEvent(user,createApplicationUrl(request)));
+        applicationEventPublisher.publishEvent(new UserRegistrationEvent(user,urlCreation.createApplicationUrl(request)));
         return new ResponseEntity<>(userRegistrationStatus,HttpStatus.OK);
     }
-    private String createApplicationUrl(HttpServletRequest request) {
-        return "http://"
-                +request.getServerName()+":"
-                +request.getServerPort()
-                +request.getContextPath();
-    }
+
 
     /*
     * When the user clicks on the verification link

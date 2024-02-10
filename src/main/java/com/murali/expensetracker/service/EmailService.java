@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     @Autowired
     JavaMailSender javaMailSender;
-    public void sendVerificationEmail(String toEmail,String body,String subject)throws MailException {
+    public void sendEmail(String toEmail,String body,String subject)throws MailException {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setText(body);
         message.setSubject(subject);
-        message.setFrom("nsmexpensetracker@gmail.com");
+        message.setFrom("expensetracker.nsm.projectet@gmail.com");
 
         javaMailSender.send(message);
         
