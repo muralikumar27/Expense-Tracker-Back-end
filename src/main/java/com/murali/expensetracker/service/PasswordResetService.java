@@ -8,4 +8,6 @@ public interface PasswordResetService {
     String ValidResetToken(String token);
 
     void resetPassword(PasswordModel passwordModel) throws Exception;
+
+    boolean changePassword(PasswordModel passwordModel);
 }

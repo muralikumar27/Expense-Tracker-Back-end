@@ -5,6 +5,7 @@ import com.murali.expensetracker.response.ResponseStatus;
 import com.murali.expensetracker.service.PasswordResetService;
 import com.murali.expensetracker.service.UrlCreation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class PasswordResetController {
     private PasswordResetService passwordResetService;
     @Autowired
     private UrlCreation urlCreation;
+
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseStatus>resetPasswordTokenEmail(@RequestBody PasswordModel passwordModel, HttpServletRequest request) throws Exception {
         String applicationUrl = urlCreation.createApplicationUrl(request);
@@ -44,6 +46,19 @@ public class PasswordResetController {
         }
 
         responseStatus = new ResponseStatus(" Password reset successful !",HttpStatus.OK);
+        return new ResponseEntity<>(responseStatus,HttpStatus.OK);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ResponseStatus>changePassword(@Valid @RequestBody PasswordModel passwordModel){
+        boolean changed = passwordResetService.changePassword(passwordModel);
+        ResponseStatus responseStatus;
+        if(changed){
+            responseStatus = new ResponseStatus("Password changed successfully !", HttpStatus.OK);
+        }
+        else {
+            responseStatus = new ResponseStatus("Enter correct current password", HttpStatus.OK);
+        }
         return new ResponseEntity<>(responseStatus,HttpStatus.OK);
     }
 }

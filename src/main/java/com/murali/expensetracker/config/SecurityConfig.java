@@ -12,7 +12,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
-    private final String[] WHITE_LISTED = {"/register","/verify-user","/forgot-password","/reset-password"};
+    private final String[] WHITE_LISTED = {"/register","/verify-user","/forgot-password","/reset-password",
+            "/change-password",};
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(11);

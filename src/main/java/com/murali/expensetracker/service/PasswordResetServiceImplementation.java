@@ -46,9 +46,14 @@ public class PasswordResetServiceImplementation implements PasswordResetService{
         user = userFromRepo.get();
         if(!user.isEnabled()){
             Optional<UserVerification>userVerificationFromDB = userVerificationRepository.getByUser(user);
-            UserVerification userVerification = userVerificationFromDB.get();
-            userVerificationRepository.delete(userVerification);
-            applicationEventPublisher.publishEvent(new UserRegistrationEvent(user,url));
+            if(userVerificationFromDB.isPresent()){
+                UserVerification userVerification = userVerificationFromDB.get();
+                userVerificationRepository.delete(userVerification);
+                applicationEventPublisher.publishEvent(new UserRegistrationEvent(user,url));
+            }
+            else{
+                applicationEventPublisher.publishEvent(new UserRegistrationEvent(user,url));
+            }
             throw new UserNotActivatedException("Account not activated, check email for activation link !");
         }
 
@@ -75,6 +80,7 @@ public class PasswordResetServiceImplementation implements PasswordResetService{
         }
         passwordToken = optionalPasswordToken.get();
         if((passwordToken.getTime().getTime() - calendar.getTime().getTime()) <= 0){
+            passwordTokenRepository.delete(passwordToken);
             return "expired";
         }
         return "valid";
@@ -89,5 +95,23 @@ public class PasswordResetServiceImplementation implements PasswordResetService{
         User user = optionalUser.get();
         user.setPassword(passwordEncoder.encode(passwordModel.getNewPassword()));
         userRepository.save(user);
+    }
+
+    @Override
+    public boolean changePassword(PasswordModel passwordModel) {
+        Optional<User>optionalUser = userRepository.getByEmailId(passwordModel.getEmail());
+        if(optionalUser.isEmpty()){
+            throw new UsernameNotFoundException("No user found for specified email");
+        }
+        User user = optionalUser.get();
+        String currentPassword = user.getPassword();
+        if(passwordEncoder.matches(passwordModel.getCurrentPassword(),currentPassword)){
+            user.setPassword(passwordEncoder.encode(passwordModel.getNewPassword()));
+            userRepository.save(user);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
