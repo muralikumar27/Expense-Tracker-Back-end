@@ -1,7 +1,6 @@
 package com.murali.expensetracker.service;
 
 import com.murali.expensetracker.entity.User;
-import com.murali.expensetracker.exception.UserAlreadyExistsException;
 import com.murali.expensetracker.model.UserModel;
 
 public interface UserRegistrationService {
@@ -11,4 +10,8 @@ public interface UserRegistrationService {
     void saveUserToken(User user, String token);
 
     String verifyUser(String token);
+
+    String resendVerificationToken(String token, String applicationUrl);
+
+
 }

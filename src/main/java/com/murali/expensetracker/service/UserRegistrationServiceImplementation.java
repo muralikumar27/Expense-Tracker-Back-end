@@ -8,10 +8,12 @@ import com.murali.expensetracker.model.UserModel;
 import com.murali.expensetracker.repository.UserRepository;
 import com.murali.expensetracker.repository.UserVerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
+import java.util.UUID;
 
 @Service
 public class UserRegistrationServiceImplementation implements UserRegistrationService{
@@ -22,6 +24,8 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
     private PasswordEncoder passwordEncoder;
     @Autowired
     UserVerificationRepository userVerificationRepository;
+    @Autowired
+    EmailService emailService;
     @Override
     public User registerUser(UserModel userModel) throws Exception{
         User user = new User();
@@ -60,12 +64,36 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
             return "invalid";
         }
         if((userVerification.getTime().getTime()-calendar.getTime().getTime()) <= 0){
-            userVerificationRepository.delete(userVerification);
+
             return "expired";
         }
         User user = userVerification.getUser();
         user.setEnabled(true);
         userRepository.save(user);
+        userVerificationRepository.delete(userVerification);
         return "valid";
+    }
+
+    @Override
+    public String resendVerificationToken(String token, String applicationUrl)throws MailException {
+        UserVerification userVerification = userVerificationRepository.getByToken(token);
+        if(userVerification==null){
+            return "invalid";
+        }
+        User user = userVerification.getUser();
+        userVerificationRepository.delete(userVerification);
+        resendVerificationEmail(user,applicationUrl);
+        return "valid";
+    }
+
+    private void resendVerificationEmail(User user , String applicationUrl) throws MailException {
+        String newToken = UUID.randomUUID().toString();
+        String toEmail = user.getEmailId();
+        String subject = "Verify Account !";
+        UserVerification userVerification = new UserVerification(user,newToken);
+        userVerificationRepository.save(userVerification);
+        String mailBody = "Please verify your account by clicking on the link below\n" + applicationUrl + "/verify-user/?token=" + newToken;
+
+        emailService.sendEmail(toEmail, mailBody, subject);
     }
 }

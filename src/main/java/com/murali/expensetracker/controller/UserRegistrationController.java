@@ -67,4 +67,16 @@ public class UserRegistrationController {
         }
 
     }
+    @GetMapping("/resend-token")
+    public ResponseEntity<UserRegistrationStatus>resendVerificationToken(@RequestParam("token") String token,HttpServletRequest request){
+        String status = userRegistrationService.resendVerificationToken(token,urlCreation.createApplicationUrl(request));
+
+        if (status.equals("invalid")){
+            UserRegistrationStatus userRegistrationStatus = new UserRegistrationStatus("Invalid Token !", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(userRegistrationStatus,HttpStatus.UNAUTHORIZED);
+        }
+
+        UserRegistrationStatus userRegistrationStatus = new UserRegistrationStatus("resent verification token !",HttpStatus.OK);
+        return new ResponseEntity<>(userRegistrationStatus,HttpStatus.OK);
+    }
 }
