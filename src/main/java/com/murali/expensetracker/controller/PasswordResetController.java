@@ -27,4 +27,23 @@ public class PasswordResetController {
         ResponseStatus responseStatus = new ResponseStatus("Password reset mail sent !", HttpStatus.OK);
         return new ResponseEntity<>(responseStatus,HttpStatus.OK);
     }
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseStatus>resetPassword(@RequestBody PasswordModel passwordModel,@RequestParam("token") String token) throws Exception {
+        String validation = passwordResetService.ValidResetToken(token);
+        ResponseStatus responseStatus;
+        if(validation.equals("invalid")){
+            responseStatus = new ResponseStatus(" Password reset token invalid !",HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(responseStatus,HttpStatus.UNAUTHORIZED);
+        }
+        if(validation.equals("expired")){
+            responseStatus = new ResponseStatus(" Password reset token expired !",HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(responseStatus,HttpStatus.UNAUTHORIZED);
+        }
+        if (validation.equals("valid")){
+            passwordResetService.resetPassword(passwordModel);
+        }
+
+        responseStatus = new ResponseStatus(" Password reset successful !",HttpStatus.OK);
+        return new ResponseEntity<>(responseStatus,HttpStatus.OK);
+    }
 }
