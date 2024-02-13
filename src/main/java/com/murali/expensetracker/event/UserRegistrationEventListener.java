@@ -9,7 +9,7 @@ import org.springframework.mail.MailException;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
-/*
+/**
 * Once the UserRegistrationEvent is published
 * this class will listen to the event and the
 * userRegistrationEvent class contains the source of the event,

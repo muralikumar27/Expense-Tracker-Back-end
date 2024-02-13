@@ -26,6 +26,14 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
     UserVerificationRepository userVerificationRepository;
     @Autowired
     EmailService emailService;
+
+    /**
+     * Handles User registration functionality.
+     *
+     * @param userModel consists of email, name, password
+     * @return User object after saving the user to the database
+     * @throws Exception if user already exists with same email id.
+     */
     @Override
     public User registerUser(UserModel userModel) throws Exception{
         User user = new User();
@@ -46,7 +54,8 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
         userVerificationRepository.save(userVerification);
     }
 
-    /*
+    /**
+     * Handles validation of verification token.
     *This method will try to get UserVerification object
     * with the help of userVerificationRepository.getByToken(token)
     * if there exists a data in the userVerification table
@@ -55,6 +64,10 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
     * data for the token "invalid" will be returned, if the token
     * timing is expired then "expired" will be returned, if the token is valid
     * user account will be enabled and "valid" will be returned.
+     * @param token verification token entered by user in url
+     * @return invalid if there exists no data for the token, expired if the token
+     * is expired else user will be enabled and returns valid.
+     *
     */
     @Override
     public String verifyUser(String token) {
@@ -74,6 +87,16 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
         return "valid";
     }
 
+    /**
+     * Handles verification token resend function.
+     * If current token exists in DB then a new mail with new token
+     * will be sent and old token will be deleted and new token will
+     * be added to database for future validation.
+     * @param token current token passed in url by user
+     * @param applicationUrl application's base url
+     * @return invalid if the current token provided by user is invalid, else valid.
+     * @throws MailException if there is error in sending mail.
+     */
     @Override
     public String resendVerificationToken(String token, String applicationUrl)throws MailException {
         UserVerification userVerification = userVerificationRepository.getByToken(token);
@@ -86,6 +109,14 @@ public class UserRegistrationServiceImplementation implements UserRegistrationSe
         return "valid";
     }
 
+    /**
+     * Resends the verification email to the specified user with a new verification token.
+     * This method generates a new verification token, associates it with the user in the database,
+     * and sends an email to the user for account verification.
+     * @param user The User object for whom the verification email is to be resent.
+     * @param applicationUrl The base URL of the application.
+     * @throws MailException If there is an issue with sending the email.
+     */
     private void resendVerificationEmail(User user , String applicationUrl) throws MailException {
         String newToken = UUID.randomUUID().toString();
         String toEmail = user.getEmailId();
