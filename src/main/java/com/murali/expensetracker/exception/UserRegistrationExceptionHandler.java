@@ -5,6 +5,7 @@ import com.murali.expensetracker.error.ErrorMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -42,10 +43,16 @@ public class UserRegistrationExceptionHandler {
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(), HttpStatus.UNAUTHORIZED);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
     }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorMessage>badCredentialException(BadCredentialsException e){
+        ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(errorMessage,HttpStatus.UNAUTHORIZED);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> userRegistrationExceptionHandler(Exception e) {
         e.printStackTrace();
         ErrorMessage errorMessage = new ErrorMessage("Error, try again", HttpStatus.BAD_REQUEST);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+
 }
