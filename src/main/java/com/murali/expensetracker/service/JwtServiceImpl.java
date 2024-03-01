@@ -3,25 +3,22 @@ package com.murali.expensetracker.service;
 import com.murali.expensetracker.entity.User;
 import com.murali.expensetracker.model.LoginModel;
 import com.murali.expensetracker.repository.UserRepository;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.*;
+import java.util.function.Function;
 
 @Service
 public class JwtServiceImpl implements JwtService{
     @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
+
     @Value("${key}")
     private String SECRET;
     @Override
@@ -29,27 +26,6 @@ public class JwtServiceImpl implements JwtService{
         Map<String,Object> claims = new HashMap<>();
         return createToken(claims,id);
     }
-
-    /**
-     * Handles user validation process by verifying the
-     * emailId and password entered by the user
-     * @param loginModel contains emailId and password
-     * @return User object for creating JWT based on userId
-     * */
-    @Override
-    public User verifyUser(LoginModel loginModel) {
-
-        Optional<User> optionalUser = userRepository.getByEmailId(loginModel.getEmail());
-        if(optionalUser.isEmpty()){
-            throw new UsernameNotFoundException("Invalid email for login");
-        }
-        User user = optionalUser.get();
-        if(!passwordEncoder.matches(loginModel.getPassword(), user.getPassword())){
-            throw new BadCredentialsException("wrong password");
-        }
-        return user;
-    }
-
     private String createToken(Map<String, Object> claims, Long id) {
         return Jwts.builder()
                 .claims(claims)
@@ -61,10 +37,60 @@ public class JwtServiceImpl implements JwtService{
 
     }
 
-    private Key getKey() {
+    private SecretKey getKey() {
         byte[] key = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(key);
     }
 
+    public String getUserId(String token) {
+        return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public Date getExpirationDateFromToken(String token) {
+        return getClaimFromToken(token, Claims::getExpiration);
+    }
+
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claimsResolver.apply(claims);
+    }
+
+
+    public boolean verifyToken(String jwt){
+        JwtParser jwtParser = Jwts.parser()
+                .verifyWith(getKey())
+                .build();
+        try {
+            jwtParser.parse(jwt);
+        } catch (Exception e) {
+            return false;
+        }
+        return (!isTokenExpired(jwt));
+    }
+
+
+
+    @Override
+    public User getUser(String email) {
+        return userRepository.findByEmailId(email);
+    }
+
+    private Claims getAllClaimsFromToken(String token){
+        Claims claims = null;
+        JwtParser jwtParser = Jwts.parser()
+                .verifyWith(getKey())
+                .build();
+        try {
+            claims =  jwtParser.parseSignedClaims(token).getPayload();
+        }
+        catch (Exception e){
+            throw new JwtException("Something went wrong,Try logging in again");
+        }
+        return claims;
+    }
+
+    private Boolean isTokenExpired(String token) {
+        return getExpirationDateFromToken(token).before(new Date());
+    }
 
 }

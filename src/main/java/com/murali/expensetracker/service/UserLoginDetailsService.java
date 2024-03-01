@@ -24,4 +24,13 @@ public class UserLoginDetailsService implements UserDetailsService {
         User user = optionalUser.get();
         return new UserInfoDetails(user);
     }
+
+    public UserDetails loadUserByUserId(long id){
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty()){
+            throw new UsernameNotFoundException("Try logging in again,Invalid JWT");
+        }
+        User user = optionalUser.get();
+        return new UserInfoDetails(user);
+    }
 }

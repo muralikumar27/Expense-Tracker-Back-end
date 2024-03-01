@@ -2,6 +2,7 @@ package com.murali.expensetracker.exception;
 
 
 import com.murali.expensetracker.error.ErrorMessage;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
@@ -48,10 +49,21 @@ public class UserRegistrationExceptionHandler {
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(errorMessage,HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorMessage>jwtException(JwtException je){
+        ErrorMessage errorMessage = new ErrorMessage(je.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorMessage,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorMessage>runtimeException(RuntimeException e){
+        ErrorMessage errorMessage = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorMessage,HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> userRegistrationExceptionHandler(Exception e) {
-        e.printStackTrace();
-        ErrorMessage errorMessage = new ErrorMessage("Error, try again", HttpStatus.BAD_REQUEST);
+        ErrorMessage errorMessage = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 
