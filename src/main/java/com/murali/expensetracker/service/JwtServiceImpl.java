@@ -1,7 +1,6 @@
 package com.murali.expensetracker.service;
 
 import com.murali.expensetracker.entity.User;
-import com.murali.expensetracker.model.LoginModel;
 import com.murali.expensetracker.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -14,6 +13,10 @@ import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * This class is responsible for handling the
+ * service required for JWT verification and
+ * Authorization functions*/
 @Service
 public class JwtServiceImpl implements JwtService{
     @Autowired

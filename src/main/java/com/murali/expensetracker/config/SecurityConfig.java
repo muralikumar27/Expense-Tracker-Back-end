@@ -2,6 +2,7 @@ package com.murali.expensetracker.config;
 
 import com.murali.expensetracker.filter.JwtAuthenticationFilter;
 import com.murali.expensetracker.service.UserLoginDetailsService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 @EnableWebSecurity
 @Configuration
@@ -47,7 +54,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors->cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(req->
                         req.requestMatchers(WHITE_LISTED).permitAll()
                                 .anyRequest()
@@ -62,6 +69,23 @@ public class SecurityConfig {
 
     }
 
+    private CorsConfigurationSource corsConfigurationSource() {
+        return request -> {
+            CorsConfiguration cfg = new CorsConfiguration();
+            cfg.setAllowedOrigins(Arrays.asList(
+                    "http://127.0.0.1:5500/"
+            ));
+            cfg.setAllowedMethods(Collections.singletonList("*"));
+            cfg.setAllowCredentials(true);
+            cfg.setAllowedHeaders(Collections.singletonList("*"));
+            cfg.setExposedHeaders(Arrays.asList(
+                    "Authorization"
+            ));
+            cfg.setMaxAge(3600L);
+            return cfg;
+        };
+    }
+
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -73,5 +97,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
 }

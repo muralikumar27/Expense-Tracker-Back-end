@@ -25,7 +25,6 @@ public class UserRegistrationController {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private UrlCreation urlCreation;
-
     /**
      * This method handles the POST request from the user to
      * register the user account, first the user will be saved to the

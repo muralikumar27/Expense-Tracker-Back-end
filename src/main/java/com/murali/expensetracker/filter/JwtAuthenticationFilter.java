@@ -19,7 +19,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-
+/**
+ * This filter is used to stand in front of each
+ * request for JWT based authorization for each request
+ * doFilterInternal method will check the request url header
+ * then verify the JWT ,if its valid then extract the user id
+ * from the JWT and load the User details and set the securityContext
+ * and pass the request to the next filters in the filter chain.*/
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
