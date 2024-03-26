@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @ResponseStatus
-public class UserRegistrationExceptionHandler {
+public class AllExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorMessage> userRegistrationExceptionHandler(UserAlreadyExistsException e) {
@@ -46,6 +46,7 @@ public class UserRegistrationExceptionHandler {
     }
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorMessage>badCredentialException(BadCredentialsException e){
+        System.out.println("bad credentials triggered...");
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(errorMessage,HttpStatus.UNAUTHORIZED);
     }

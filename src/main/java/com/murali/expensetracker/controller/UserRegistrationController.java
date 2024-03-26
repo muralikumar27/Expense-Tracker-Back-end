@@ -1,6 +1,4 @@
 package com.murali.expensetracker.controller;
-
-
 import com.murali.expensetracker.entity.User;
 import com.murali.expensetracker.event.UserRegistrationEvent;
 import com.murali.expensetracker.model.UserModel;
