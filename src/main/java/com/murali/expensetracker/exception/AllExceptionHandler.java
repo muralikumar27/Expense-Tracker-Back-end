@@ -46,7 +46,6 @@ public class AllExceptionHandler {
     }
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorMessage>badCredentialException(BadCredentialsException e){
-        System.out.println("bad credentials triggered...");
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),HttpStatus.UNAUTHORIZED);
         return new ResponseEntity<>(errorMessage,HttpStatus.UNAUTHORIZED);
     }
